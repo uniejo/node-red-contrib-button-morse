@@ -1,2 +1,2 @@
-# red-contrib-button-morse
+# node-red-contrib-button-morse
 Read button presses. Convert Morse code into text
