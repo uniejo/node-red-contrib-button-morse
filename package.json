@@ -1,0 +1,28 @@
+{
+  "name": "node-red-contrib-button-morse",
+  "version": "1.0.0",
+  "description": "Timing of Button down/up events, returning press sequence information (Morse code)",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Erik Johansen",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uniejo/node-red-contrib-button-morse.git"
+  },
+  "keywords": [
+    "Button",
+    "Morse"
+  ],
+  "bugs": {
+    "url": "https://github.com/uniejo/node-red-contrib-button-morse/issues"
+  },
+  "homepage": "https://github.com/uniejo/node-red-contrib-button-morse#readme",
+  "node-red": {
+    "nodes": {
+      "button-morse": "button-morse.js"
+    }
+  }
+}
