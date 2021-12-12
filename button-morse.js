@@ -11,34 +11,12 @@ module.exports = function(RED) {
         /* --- */
         node.on('start', function(msg) {
 /* --- */
-// Code added here will be run once, when the node is started.
-context.set('timers', [], 'objects');
-context.set('dots', [], 'memory');
-context.set('state', null, 'memory')
-context.set('up_time', (new Date()).getTime(), 'memory');
-context.set('down_time', (new Date()).getTime(), 'memory');
-context.set('up_token_idx', null, 'memory')
-context.set('down_token_idx', null, 'memory')
-context.set('up_token', null, 'memory')
-context.set('down_token', null, 'memory')
-//context.set('dot_length', 333)
-/* --- */
-        });
-        /* --- */
-        node.on('stop', function(msg) {
-/* --- */
-// Code added here will be run whenever the node is stopped.
-/* --- */
-        });
-        /* --- */
-        node.on('input', function(msg) {
-/* --- */
 // Code added here will be run whenever the node receives input.
 /*
 Sends the following messages:
 
 1) When button is pressed and released:
-   topic: "button_down", "button_up"    
+   topic: "button_down", "button_up" 
    Notitce that debounce should be handled by input, before passing message to this node.
 
 2) While button is pressed, and time passses, a progress message is sent,
@@ -49,15 +27,15 @@ Sends the following messages:
 3) When key is released, the last progress message is sent as an action.
    f.ex:
    topic: "action_short_press", action_quiet", "action_restart", "asction_reboot", "action_nop"
-   
+
 4) After button is released, progress messages are sent as timer intervals pass.
    f.ex.:
    topic: "letter_end", "word_end", "sentence_end", "clear_history"
-   
+
 5) Next time the button is pressed, the last up message may indicate a token (space) to insert, if history has not been cleared.
    f.ex.:
    topic: "action_no_space", action_end_of_character", "action_end_of_word", "action_end_of_sentence"
-   
+
 The payload may look like this:
 {
   "dots": "...  ___  ...",     // Notice the use of UTF-8 thin space (\u2009) between morse letters
@@ -217,11 +195,13 @@ const button_data = {
 
 
 const morse_codes = [
+      // 9
+      { seq: '...___...', key: 'SOS' }, // Without letter spaces
       // 8
       { seq: '........', key: erase_word },
       // 6
       { seq: '._._._', key: '.' }, { seq: '__..__', key: ', ' }, { seq: '___...', key: ':' },
-      { seq: '..__..', key: '?' }, { seq: '.____.', key: "'"  }, { seq: '_...._', key: '-' }, 
+      { seq: '..__..', key: '?' }, { seq: '.____.', key: "'"  }, { seq: '_...._', key: '-' },
       { seq: '_.__._', key: '(' }, { seq: '._.._.', key: '"'  },
       // 5
       { seq: '_.._.', key: '/' },
@@ -236,10 +216,10 @@ const morse_codes = [
       { seq: '_.__', key: 'y' }, { seq: '__..', key: 'z' },
       // 3
       { seq: '_..', key: 'd' }, { seq: '__.', key: 'g' }, { seq: '_._', key: 'k' },
-      { seq: '___', key: 'o' }, { seq: '._.', key: 'r' }, { seq: '...', key: 's' }, 
-      { seq: '.._', key: 'u' }, { seq: '.._', key: 'v' }, { seq: '.__', key: 'w' }, 
-      // 2 
-      { seq: '._', key: 'a' }, { seq: '..', key: 'i' }, { seq: '__', key: 'm' }, { seq: '_.', key: 'n' }, 
+      { seq: '___', key: 'o' }, { seq: '._.', key: 'r' }, { seq: '...', key: 's' },
+      { seq: '.._', key: 'u' }, { seq: '.._', key: 'v' }, { seq: '.__', key: 'w' },
+      // 2
+      { seq: '._', key: 'a' }, { seq: '..', key: 'i' }, { seq: '__', key: 'm' }, { seq: '_.', key: 'n' },
       // 1
       { seq: '.', key: 'e' }, { seq: '_', key: 't' },
     ]
@@ -359,7 +339,7 @@ function dot_info(dot_temp) {
         remain = remain.slice(found[0].length); // Remove first char
         let op=match_h[found[1]]
         if ( op && op.key ) text += op.key;
-        
+//      if ( op && op.action ) text = op.action(text)  // Notice that action runs every time this secuence is sent
     }
 //  node.warn('Processed text: '+text)
     text = text.replace(/\u2009/g, "").replace(/\w*\u232B/g, "")
@@ -374,11 +354,11 @@ function dot_info(dot_temp) {
         sentence: smatch && smatch[smatch.length - 1],  // last sentence
         word:     wmatch && wmatch[wmatch.length - 1],
         letter:   lmatch && lmatch[lmatch.length - 1],
-        
+ 
         state:    dot ? dot.state : null,
         token:    dot ? dot.token : null,
         time:     dot ? dot.time  : null,
-    };    
+    };
     if (debug) node.warn('dot_info from dot: '+JSON.stringify(dot)+'  => '+JSON.stringify(inf));
 
     return inf;
