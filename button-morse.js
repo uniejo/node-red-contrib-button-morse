@@ -16,7 +16,7 @@ module.exports = function(RED) {
 Sends the following messages:
 
 1) When button is pressed and released:
-   topic: "button_down", "button_up" 
+   topic: "button_down", "button_up"
    Notitce that debounce should be handled by input, before passing message to this node.
 
 2) While button is pressed, and time passses, a progress message is sent,
@@ -48,7 +48,7 @@ The payload may look like this:
 Note: You may see the following warnings in the debug log:
     "Unknown context store 'objects' specified. Using default store."
     "Context ... contains circular referece that cannot be persisted"
-  The warnings have no effect on the funtionality, but you may want to
+  The warnings have no effect on the functionality, but you may want to
   update your .node-red/settings.js to have a contextStorage like this:
      contextStorage: {
          default: { module:"localfilesystem" },
@@ -339,7 +339,7 @@ function dot_info(dot_temp) {
         remain = remain.slice(found[0].length); // Remove first char
         let op=match_h[found[1]]
         if ( op && op.key ) text += op.key;
-//      if ( op && op.action ) text = op.action(text)  // Notice that action runs every time this secuence is sent
+//      if ( op && op.action ) text = op.action(text)  // Notice that action runs every time this sequence is sent
     }
 //  node.warn('Processed text: '+text)
     text = text.replace(/\u2009/g, "").replace(/\w*\u232B/g, "")
@@ -354,7 +354,7 @@ function dot_info(dot_temp) {
         sentence: smatch && smatch[smatch.length - 1],  // last sentence
         word:     wmatch && wmatch[wmatch.length - 1],
         letter:   lmatch && lmatch[lmatch.length - 1],
- 
+
         state:    dot ? dot.state : null,
         token:    dot ? dot.token : null,
         time:     dot ? dot.time  : null,
@@ -370,9 +370,8 @@ function send_dot_info(topic, dot_temp) {
     node.send(msg)
     return di;
 }
+
 /* --- */
-        });
-        /* --- */
-    }
+    });
     RED.nodes.registerType('button-morse', ButtonMorseNode);
 }
