@@ -1,7 +1,7 @@
 # node-red-contrib-button-morse
-Read button presses. Convert Morse code into text (dots, letter, word, text, sentence)
+### Read button presses. Convert Morse code into text (dots, letter, word, text, sentence)
 
-Sends the following messages:
+#### Sends the following messages:
 
 1) When button is pressed and released:
    topic: "button_down", "button_up"
@@ -24,25 +24,31 @@ Sends the following messages:
    f.ex.:
    topic: "action_no_space", action_end_of_character", "action_end_of_word", "action_end_of_sentence"
 
-The payload may look like this:
+#### The payload may look like this:
+```json
 {
-  "dots": "...  ___  ...",     // Notice the use of UTF-8 thin space (\u2009) between morse letters
+  "dots": "...  ___  ...",
   "text": "sos",
   "sentence": "sos",
   "word": "sos",
   "letter": "s"
 }
+```
 
-Note: You may see the following warnings in the debug log:
-    "Unknown context store 'objects' specified. Using default store."
-    "Context ... contains circular referece that cannot be persisted"
+#### Note: You may see the following warnings in the debug log:  
+-  "Unknown context store 'objects' specified. Using default store."
+-  "Context ... contains circular referece that cannot be persisted"
+
   The warnings have no effect on the funtionality, but you may want to
   update your .node-red/settings.js to have a contextStorage like this:
+  ```json
+  {
      contextStorage: {
          default: { module:"localfilesystem" },
          memory: { module:"memory" },
          objects: { module:"localfilesystem", config: { cache: true, flushInterval: 28800 } }
-     },
-
+     }
+  }
+   ```
 Created by: Erik Johansen, 2021-12-12
 
