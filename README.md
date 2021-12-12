@@ -39,7 +39,7 @@
 -  "Unknown context store 'objects' specified. Using default store."
 -  "Context ... contains circular referece that cannot be persisted"
 
-  The warnings have no effect on the funtionality, but you may want to
+  The warnings have no effect on the functionality, but you may want to
   update your .node-red/settings.js to have a contextStorage like this:
   ```json
   {
