@@ -28,14 +28,17 @@ Default assumption: down = 0, up = 1 (aka pull up)
    f.ex.:
    topic: "action_no_space", action_end_of_character", "action_end_of_word", "action_end_of_sentence"
 
-#### The payload may look like this:
+#### The message/payload may look like this:
 ```json
 {
-  "dots": "...  ___  ...",
-  "text": "sos",
-  "sentence": "sos",
-  "word": "sos",
-  "letter": "s"
+  "topic": "sentence_end",
+  "payload": {
+    "dots": "...  ___  ...",
+    "text": "sos",
+    "sentence": "sos",
+    "word": "sos",
+    "letter": "s"
+  }
 }
 ```
 
@@ -47,10 +50,10 @@ Default assumption: down = 0, up = 1 (aka pull up)
   update your .node-red/settings.js to have a contextStorage like this:
   ```json
   {
-     contextStorage: {
-         default: { module:"localfilesystem" },
-         memory: { module:"memory" },
-         objects: { module:"localfilesystem", config: { cache: true, flushInterval: 28800 } }
+     "contextStorage": {
+         "default": { "module": "localfilesystem" },
+         "memory":  { "module": "memory" },
+         "objects": { "module": "localfilesystem", "config": { "cache": true, "flushInterval": 28800 } }
      }
   }
    ```
