@@ -1,6 +1,10 @@
 # node-red-contrib-button-morse
 ### Read button presses. Convert Morse code into text (dots, letter, word, text, sentence)
 
+#### Takes input from a button
+Default assumption: down = 0, up = 1 (aka pull up)
+
+
 #### Sends the following messages:
 
 1) When button is pressed and released:
@@ -50,5 +54,13 @@
      }
   }
    ```
+#### Passing output on to another node
+Only one output line, but a lot of different messages.
+
+I usually pass output on to a Switch, that looks at msg.topic. f.ex.
+1) If topic contains 'action_reboot' -> Exec sudo shutdown -r now
+2) If topic contains 'action_shutdown' -> Exec sudo shutdown -h now
+3) If topic contains 'sentence_end' -> Switch that looks at msg.payload.sentence to find different sentences that it should react to
+   
 Created by: Erik Johansen, 2021-12-12
 
