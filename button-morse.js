@@ -154,7 +154,7 @@ const up_delays = [
         progress_action: function(t) {
         },
         action: function () {
-            // Does not make much sense. Is not fired until button is pressed next time.
+            // Does not make much sense. Is not called until button is pressed next time.
         }
 */
     },
@@ -195,25 +195,33 @@ const button_data = {
 
 
 const morse_codes = [
+      { seq: '______.._._____', key: '%' }, // '0/0'
+      { seq: '______'+thin_space+'.._.'+thin_space+'_____', key: '%' }, // '0/0'
       // 9
       { seq: '...___...', key: 'SOS' }, // Without letter spaces
       // 8
       { seq: '........', key: erase_word },
       // 6
-      { seq: '._._._', key: '.' }, { seq: '__..__', key: ', ' }, { seq: '___...', key: ':' },
-      { seq: '..__..', key: '?' }, { seq: '.____.', key: "'"  }, { seq: '_...._', key: '-' },
-      { seq: '_.__._', key: '(' }, { seq: '._.._.', key: '"'  },
+      { seq: '._._._', key: '.' }, { seq: '__..__', key: ', '}, { seq: '___...', key: ':' },
+      { seq: '..__..', key: '?' }, { seq: '.____.', key: "'" }, { seq: '_...._', key: '-' },
+      { seq: '_.__._', key: '(' }, { seq: '._.._.', key: '"' }, { seq: '.__._.', key: '@' },
+      { seq: '__..__', key: ',' }, { seq: '_._.__', key: '!' },
       // 5
-      { seq: '_.._.', key: '/' },
       { seq: '.____', key: '1' }, { seq: '..___', key: '2' }, { seq: '...__', key: '3' },
       { seq: '...._', key: '4' }, { seq: '.....', key: '5' }, { seq: '_....', key: '6' },
       { seq: '__...', key: '7' }, { seq: '___..', key: '8' }, { seq: '____.', key: '9' },
       { seq: '_____', key: '0' },
+      { seq: '_.._.', key: '/' }, { seq: '._...', key: '&' }, { seq: '_.__.', key: ')' },
+      { seq: '_..._', key: '=' }, { seq: '._._.', key: '+' },
+      { seq: '-__-_', key: 'å' }, // å/à
+      { seq: '_._..', key: 'ć' }, // ć/./.
       // 4
       { seq: '_...', key: 'b' }, { seq: '_._.', key: 'c' }, { seq: '.._.', key: 'f' },
       { seq: '....', key: 'h' }, { seq: '.___', key: 'j' }, { seq: '._..', key: 'l' },
       { seq: '.__.', key: 'p' }, { seq: '__._', key: 'q' }, { seq: '_.._', key: 'x' },
       { seq: '_.__', key: 'y' }, { seq: '__..', key: 'z' },
+      { seq: '._._', key: 'æ' }, // æ/ä/.ä
+      { seq: '___.', key: 'ø' }, // ø/ö/ö
       // 3
       { seq: '_..', key: 'd' }, { seq: '__.', key: 'g' }, { seq: '_._', key: 'k' },
       { seq: '___', key: 'o' }, { seq: '._.', key: 'r' }, { seq: '...', key: 's' },
