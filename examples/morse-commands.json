@@ -1,0 +1,273 @@
+[
+    {
+        "id": "mc_comment",
+        "type": "comment",
+        "name": "Spell a word to control something: on / off / sos",
+        "info": "Spell a word, then pause 12 s (end of sentence):\n- **on** (`___  _.`) sets the LED to 1\n- **off** (`___  .._.  .._.`) sets it to 0\n- **sos** (`...  ___  ...`) sends an alert\n\nDot length is 1000 ms for clicking the Inject nodes: short click < 0.5 s, long click > 1.5 s, pause 3 s between letters.\n\nOn a Raspberry Pi: replace the Inject nodes with a GPIO input node, set dot length back to ~333 ms, and replace the 'LED' Debug node with a GPIO output node.\n\nThe second output plays back each letter as 1/0 - wire it to a buzzer or LED (GPIO output) to hear/see what was understood.",
+        "x": 300,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "mc_inject_down",
+        "type": "inject",
+        "name": "down",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "mc_morse"
+            ]
+        ]
+    },
+    {
+        "id": "mc_inject_up",
+        "type": "inject",
+        "name": "up",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 110,
+        "y": 160,
+        "wires": [
+            [
+                "mc_morse"
+            ]
+        ]
+    },
+    {
+        "id": "mc_morse",
+        "type": "button-morse",
+        "name": "",
+        "dotLength": 1000,
+        "sendProgress": true,
+        "invert": false,
+        "x": 300,
+        "y": 140,
+        "wires": [
+            [
+                "mc_switch_topic"
+            ],
+            [
+                "mc_debug_feedback"
+            ]
+        ],
+        "feedbackLetters": true,
+        "feedbackHolds": false,
+        "outputs": 2
+    },
+    {
+        "id": "mc_switch_topic",
+        "type": "switch",
+        "name": "sentence end",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "sentence_end",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 1,
+        "x": 490,
+        "y": 140,
+        "wires": [
+            [
+                "mc_switch_word"
+            ]
+        ]
+    },
+    {
+        "id": "mc_switch_word",
+        "type": "switch",
+        "name": "which word?",
+        "property": "payload.sentence",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "regex",
+                "v": "^on$",
+                "vt": "str",
+                "case": true
+            },
+            {
+                "t": "regex",
+                "v": "^off$",
+                "vt": "str",
+                "case": true
+            },
+            {
+                "t": "regex",
+                "v": "^sos$",
+                "vt": "str",
+                "case": true
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 3,
+        "x": 680,
+        "y": 140,
+        "wires": [
+            [
+                "mc_change_on"
+            ],
+            [
+                "mc_change_off"
+            ],
+            [
+                "mc_change_sos"
+            ]
+        ]
+    },
+    {
+        "id": "mc_change_on",
+        "type": "change",
+        "name": "LED on",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "1",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 80,
+        "wires": [
+            [
+                "mc_debug_led"
+            ]
+        ]
+    },
+    {
+        "id": "mc_change_off",
+        "type": "change",
+        "name": "LED off",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 140,
+        "wires": [
+            [
+                "mc_debug_led"
+            ]
+        ]
+    },
+    {
+        "id": "mc_change_sos",
+        "type": "change",
+        "name": "alert",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "SOS received!",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 200,
+        "wires": [
+            [
+                "mc_debug_alert"
+            ]
+        ]
+    },
+    {
+        "id": "mc_debug_led",
+        "type": "debug",
+        "name": "LED",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 1050,
+        "y": 110,
+        "wires": []
+    },
+    {
+        "id": "mc_debug_alert",
+        "type": "debug",
+        "name": "alert",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 1050,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "mc_debug_feedback",
+        "type": "debug",
+        "name": "buzzer (letter playback)",
+        "active": false,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 530,
+        "y": 200,
+        "wires": []
+    }
+]
