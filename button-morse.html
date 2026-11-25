@@ -1,27 +1,185 @@
 <script type="text/javascript">
-  RED.nodes.registrerType('button-morse', {
-    category: 'function',
-    color: '#FAEBD7',
-    defaults: {
-       'dot-length': { value: 333 },
-    },
-    inputs: 1,
-    outputs: 1,
-    icon: 'file.png',
-    label: function() {
-        return this.name||'button-morse';
-    }
-  });
+(function () {
+    const DEFAULT_HOLDS = [
+        { time: 3, name: 'hold' },
+        { time: 7, name: 'todo' },
+        { time: 10, name: 'quiet' },
+        { time: 12.5, name: 'reboot' },
+        { time: 15, name: 'shutdown' },
+        { time: 20, name: 'nop' },
+    ];
+    const slug = name => (name || 'no_name').toLowerCase().replace(/[^a-z0-9_]/g, '_');
+    const hasFeedback = n => !!(n.feedbackLetters || n.feedbackHolds);
+    const countOutputs = n => 1 + (hasFeedback(n) ? 1 : 0) + (n.actionOutputs ? (n.holds || []).length : 0);
+
+    RED.nodes.registerType('button-morse', {
+        category: 'function',
+        color: '#E6E0F8',
+        defaults: {
+            name: { value: '' },
+            dotLength: { value: 333, required: true, validate: RED.validators.number() },
+            sendProgress: { value: true },
+            invert: { value: false },
+            holds: {
+                value: DEFAULT_HOLDS.map(h => Object.assign({}, h)),
+                validate: v => Array.isArray(v) && v.every(h => Number(h.time) > 0 && String(h.name || '').trim()),
+            },
+            actionOutputs: { value: false },
+            feedbackLetters: { value: false },
+            feedbackHolds: { value: false },
+            outputs: { value: 1 },
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: 'font-awesome/fa-hand-pointer-o',
+        label: function () {
+            return this.name || 'button-morse';
+        },
+        paletteLabel: 'button morse',
+        outputLabels: function (i) {
+            if (i === 0) return 'events';
+            if (hasFeedback(this) && i === 1) return 'feedback (1/0)';
+            const hold = (this.holds || [])[i - (hasFeedback(this) ? 2 : 1)];
+            return hold ? 'action_' + slug(hold.name) + ' (' + hold.time + ' s)' : '';
+        },
+        oneditprepare: function () {
+            const list = $('#node-input-holds-container');
+            list.css('min-height', '120px').css('min-width', '420px').editableList({
+                addItem: function (row, i, hold) {
+                    row.css({ display: 'flex', alignItems: 'center', gap: '6px' });
+                    const time = $('<input type="number" class="node-input-hold-time" min="0.1" step="0.1" style="width: 80px">')
+                        .attr('placeholder', 'seconds').val(hold.time !== undefined ? hold.time : '').appendTo(row);
+                    $('<span>s</span>').appendTo(row);
+                    const name = $('<input type="text" class="node-input-hold-name" style="flex: 1" placeholder="name">')
+                        .val(hold.name || '').appendTo(row);
+                    const topic = $('<code style="font-size: 0.85em; white-space: nowrap">').appendTo(row);
+                    const update = () => topic.text('action_' + slug(name.val()));
+                    name.on('input', update);
+                    update();
+                    time.focus();
+                },
+                sortable: false,
+                removable: true,
+            });
+            (this.holds || DEFAULT_HOLDS).forEach(h => list.editableList('addItem', h));
+
+            $('#node-input-holds-reset').on('click', function (e) {
+                e.preventDefault();
+                list.editableList('empty');
+                DEFAULT_HOLDS.forEach(h => list.editableList('addItem', Object.assign({}, h)));
+            });
+        },
+        oneditsave: function () {
+            const holds = [];
+            $('#node-input-holds-container').editableList('items').each(function () {
+                const time = Number($(this).find('.node-input-hold-time').val());
+                const name = String($(this).find('.node-input-hold-name').val() || '').trim();
+                if (time > 0 && name) holds.push({ time, name });
+            });
+            holds.sort((a, b) => a.time - b.time);
+            this.holds = holds;
+            this.outputs = countOutputs({
+                holds,
+                actionOutputs: $('#node-input-actionOutputs').is(':checked'),
+                feedbackLetters: $('#node-input-feedbackLetters').is(':checked'),
+                feedbackHolds: $('#node-input-feedbackHolds').is(':checked'),
+            });
+        },
+        oneditresize: function (size) {
+            const rows = $('#dialog-form>div:not(.node-input-holds-row)');
+            let height = size.height;
+            rows.each(function () { height -= $(this).outerHeight(true); });
+            $('#node-input-holds-container').editableList('height', Math.max(120, height - 60));
+        },
+    });
+})();
 </script>
 
-
-<script type="text/javascript" data-template-name="button-morse">
-    <div class='form-row'>
+<script type="text/html" data-template-name="button-morse">
+    <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-dotLength"><i class="fa fa-clock-o"></i> Dot length</label>
+        <input type="number" id="node-input-dotLength" min="1" style="width: 100px"> ms
+    </div>
+    <div class="form-row">
+        <label for="node-input-sendProgress"><i class="fa fa-commenting-o"></i> Progress</label>
+        <input type="checkbox" id="node-input-sendProgress" style="display: inline-block; width: auto; vertical-align: top;">
+        Send progress messages while timers pass
+    </div>
+    <div class="form-row">
+        <label for="node-input-invert"><i class="fa fa-exchange"></i> Invert</label>
+        <input type="checkbox" id="node-input-invert" style="display: inline-block; width: auto; vertical-align: top;">
+        Button down = 1, up = 0
+    </div>
+    <div class="form-row">
+        <label><i class="fa fa-lightbulb-o"></i> Feedback</label>
+        <span style="display: inline-block">
+            <label style="width: auto"><input type="checkbox" id="node-input-feedbackLetters" style="width: auto; margin: 0 4px 0 0;"> Play back each letter</label><br>
+            <label style="width: auto"><input type="checkbox" id="node-input-feedbackHolds" style="width: auto; margin: 0 4px 0 0;"> Blink when a long-press step is reached</label>
+        </span>
+    </div>
+    <div class="form-row node-input-holds-row" style="margin-bottom: 0">
+        <label><i class="fa fa-hourglass-half"></i> Long press</label>
+        <span>Steps reached while holding; the last one is the action on release.</span>
+        <a href="#" id="node-input-holds-reset" class="red-ui-button red-ui-button-small" style="float: right">Defaults</a>
+    </div>
+    <div class="form-row node-input-holds-row">
+        <ol id="node-input-holds-container"></ol>
+    </div>
+    <div class="form-row">
+        <label for="node-input-actionOutputs"><i class="fa fa-random"></i> Outputs</label>
+        <input type="checkbox" id="node-input-actionOutputs" style="display: inline-block; width: auto; vertical-align: top;">
+        One extra output per long-press action
     </div>
 </script>
 
 <script type="text/html" data-help-name="button-morse">
-    <p>A node that converts button presses into Morse</p>
+    <p>Times button down/up events and decodes the press sequence as Morse code.
+        Long presses can trigger your own actions.</p>
+
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">number | boolean</span></dt>
+        <dd><code>0</code> = button down, <code>1</code> = button up (pull-up wiring).
+            Tick <i>Invert</i> for the opposite. Debounce the input before this node;
+            repeated identical states are ignored.</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>Events
+            <dl class="message-properties">
+                <dt>topic <span class="property-type">string</span></dt>
+                <dd>e.g. <code>button_down</code>, <code>button_up</code>, <code>progress_reboot</code>,
+                    <code>action_reboot</code>, <code>letter_end</code>, <code>word_end</code>,
+                    <code>sentence_end</code>, <code>clear_history</code>.</dd>
+                <dt>payload <span class="property-type">object</span></dt>
+                <dd><code>dots</code>, <code>text</code>, <code>sentence</code>, <code>word</code>,
+                    <code>letter</code>, <code>history</code>, <code>state</code>, <code>token</code>,
+                    <code>time</code>.</dd>
+            </dl>
+        </li>
+        <li>Feedback (only if a <i>Feedback</i> option is ticked)
+            <dl class="message-properties">
+                <dt>payload <span class="property-type">number</span></dt>
+                <dd><code>1</code>/<code>0</code> to switch an LED or buzzer on/off. Wire it to a GPIO output.</dd>
+            </dl>
+        </li>
+        <li>One per long-press step (only if <i>Outputs</i> is ticked): the <code>action_&lt;name&gt;</code>
+            message, sent when the button is released at that step.</li>
+    </ol>
+
+    <h3>Details</h3>
+    <p><i>Dot length</i> (ms) sets the Morse timing: a press longer than 1.5 dots is a dash,
+        a pause of 3 dots ends a letter, 7 a word and 12 a sentence.</p>
+    <p><i>Long press</i> lists the steps reached while the button is held, in seconds.
+        Each step sends <code>progress_&lt;name&gt;</code> when reached, and releasing sends
+        <code>action_&lt;name&gt;</code> for the last step reached. Add, remove or rename steps to suit
+        your project; <i>Defaults</i> restores hold / todo / quiet / reboot / shutdown / nop.
+        Tip: make the last step a harmless one (like <code>nop</code>) so holding longer cancels.</p>
+    <p><i>Feedback</i> lets a user without a screen know what happened: each keyed letter is
+        played back after the letter pause, and a short blink marks each long-press step.</p>
 </script>

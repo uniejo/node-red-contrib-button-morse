@@ -1,0 +1,245 @@
+[
+    {
+        "id": "lp_comment",
+        "type": "comment",
+        "name": "Long press: your own actions, one output each (echo only)",
+        "info": "Hold the button and count the blinks on the 'LED' Debug node:\n- 1 blink (5 s): quiet\n- 2 blinks (10 s): reboot\n- 3 blinks (15 s): shutdown\n- 4 blinks (20 s): cancel - release safely\n\nThe action runs when you **release** the button, on its own output - no Switch node needed.\nOpen the button-morse node to rename, add or remove steps (Long press list).\n\nFor safety the Exec nodes only **echo** what they would do. When you are ready, change the commands to e.g.\n`sudo shutdown -r now` (reboot) and `sudo shutdown -h now` (shutdown).\n\nReplace the Inject nodes with a GPIO input node, and the 'LED' Debug node with a GPIO output node, on a Raspberry Pi.",
+        "x": 320,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "lp_inject_down",
+        "type": "inject",
+        "name": "down",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "lp_morse"
+            ]
+        ]
+    },
+    {
+        "id": "lp_inject_up",
+        "type": "inject",
+        "name": "up",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 110,
+        "y": 160,
+        "wires": [
+            [
+                "lp_morse"
+            ]
+        ]
+    },
+    {
+        "id": "lp_morse",
+        "type": "button-morse",
+        "name": "",
+        "dotLength": 333,
+        "sendProgress": true,
+        "invert": false,
+        "x": 300,
+        "y": 140,
+        "wires": [
+            [
+                "lp_switch_progress"
+            ],
+            [
+                "lp_debug_led"
+            ],
+            [
+                "lp_exec_quiet"
+            ],
+            [
+                "lp_exec_reboot"
+            ],
+            [
+                "lp_exec_shutdown"
+            ],
+            []
+        ],
+        "holds": [
+            {
+                "time": 5,
+                "name": "quiet"
+            },
+            {
+                "time": 10,
+                "name": "reboot"
+            },
+            {
+                "time": 15,
+                "name": "shutdown"
+            },
+            {
+                "time": 20,
+                "name": "cancel"
+            }
+        ],
+        "actionOutputs": true,
+        "feedbackLetters": false,
+        "feedbackHolds": true,
+        "outputs": 6
+    },
+    {
+        "id": "lp_switch_progress",
+        "type": "switch",
+        "name": "progress",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "regex",
+                "v": "^progress_",
+                "vt": "str",
+                "case": false
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 510,
+        "y": 260,
+        "wires": [
+            [
+                "lp_debug_progress"
+            ]
+        ]
+    },
+    {
+        "id": "lp_exec_quiet",
+        "type": "exec",
+        "name": "quiet (echo only)",
+        "command": "echo 'Would run: quiet mode'",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "x": 760,
+        "y": 60,
+        "wires": [
+            [
+                "lp_debug_result"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "lp_exec_reboot",
+        "type": "exec",
+        "name": "reboot (echo only)",
+        "command": "echo 'Would run: sudo shutdown -r now'",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "x": 760,
+        "y": 120,
+        "wires": [
+            [
+                "lp_debug_result"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "lp_exec_shutdown",
+        "type": "exec",
+        "name": "shutdown (echo only)",
+        "command": "echo 'Would run: sudo shutdown -h now'",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "x": 770,
+        "y": 180,
+        "wires": [
+            [
+                "lp_debug_result"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "lp_debug_result",
+        "type": "debug",
+        "name": "command output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "lp_debug_progress",
+        "type": "debug",
+        "name": "next action",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "topic",
+        "statusType": "auto",
+        "x": 690,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "lp_debug_led",
+        "type": "debug",
+        "name": "LED",
+        "active": false,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 490,
+        "y": 300,
+        "wires": []
+    }
+]

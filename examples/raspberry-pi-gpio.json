@@ -1,0 +1,120 @@
+[
+    {
+        "id": "gp_comment",
+        "type": "comment",
+        "name": "Button on a Raspberry Pi GPIO pin",
+        "info": "Needs the **node-red-node-pi-gpio** package (installed by default on Raspberry Pi OS).\n\nWiring: one side of the button to physical pin 11 (GPIO17), the other side to a ground pin (e.g. pin 9).\n\nThe GPIO node uses the internal pull-up resistor, so the pin reads 1 when released and 0 when pressed - exactly what button-morse expects. Debounce is 25 ms.\n\nChange the pin in the GPIO node if your button is on another pin.\n\nFeedback LED: GPIO18 (physical pin 12) -> 330 ohm resistor -> LED -> ground. It plays back each letter you key and blinks at each long-press step.",
+        "x": 300,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "gp_gpio",
+        "type": "rpi-gpio in",
+        "name": "Button",
+        "pin": "11",
+        "intype": "up",
+        "debounce": "25",
+        "read": false,
+        "bcm": true,
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "gp_morse"
+            ]
+        ]
+    },
+    {
+        "id": "gp_morse",
+        "type": "button-morse",
+        "name": "",
+        "dotLength": 333,
+        "sendProgress": true,
+        "invert": false,
+        "x": 300,
+        "y": 120,
+        "wires": [
+            [
+                "gp_debug_all",
+                "gp_switch"
+            ],
+            [
+                "gp_led"
+            ]
+        ],
+        "feedbackLetters": true,
+        "feedbackHolds": true,
+        "outputs": 2
+    },
+    {
+        "id": "gp_debug_all",
+        "type": "debug",
+        "name": "all events",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "topic",
+        "statusType": "auto",
+        "x": 520,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "gp_switch",
+        "type": "switch",
+        "name": "sentence end",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "sentence_end",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 1,
+        "x": 510,
+        "y": 140,
+        "wires": [
+            [
+                "gp_debug_sentence"
+            ]
+        ]
+    },
+    {
+        "id": "gp_debug_sentence",
+        "type": "debug",
+        "name": "sentence",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload.sentence",
+        "targetType": "msg",
+        "statusVal": "payload.sentence",
+        "statusType": "auto",
+        "x": 700,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "gp_led",
+        "type": "rpi-gpio out",
+        "name": "LED",
+        "pin": "12",
+        "set": true,
+        "level": "0",
+        "freq": "",
+        "out": "out",
+        "bcm": true,
+        "x": 500,
+        "y": 200,
+        "wires": []
+    }
+]
