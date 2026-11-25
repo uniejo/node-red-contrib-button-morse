@@ -1,5 +1,10 @@
 name: Publish once
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      otp:
+        description: 'Code from authenticator app'
+        required: true
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -9,6 +14,6 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
-      - run: npm publish --access public
+      - run: npm publish --access public --otp=${{ inputs.otp }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
